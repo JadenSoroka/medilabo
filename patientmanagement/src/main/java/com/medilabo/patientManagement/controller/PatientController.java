@@ -9,6 +9,8 @@ import com.medilabo.patientManagement.service.PatientService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -43,9 +47,20 @@ public class PatientController {
         return ResponseEntity.ok(patient);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Patient>> getAllPatients() {
+        log.info("/patient GET request for all patients");
+
+        List<Patient> patients = patientService.getAllPatients();
+
+        log.info("/patient GET request for all patients successful, found {} patients", patients.size());
+        return ResponseEntity.ok(patients);
+    }
+    
+
     @PostMapping
     public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient newPatient) {
-        String formattedFirstLastName = newPatient.firstName() + " " + newPatient.lastName();
+        String formattedFirstLastName = newPatient.getFirstName() + " " + newPatient.getLastName();
         log.info("/patient POST request for name {}", formattedFirstLastName);
 
         patientService.createPatient(newPatient);
@@ -54,25 +69,23 @@ public class PatientController {
         return ResponseEntity.ok(newPatient);
     }
 
-    @PutMapping("/{firstLastName}")
-    public ResponseEntity<Void> updatePatient(@PathVariable String firstLastName, @Valid @RequestBody Patient updatedPatient) {
-        String formattedFirstLastName = firstLastName.replace("_", " ");
-        log.info("/patient PUT request for name {}", formattedFirstLastName);
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updatePatient(@PathVariable Long id, @Valid @RequestBody Patient updatedPatient) {
+        log.info("/patient PUT request for ID {}", id);
 
-        patientService.updatePatient(formattedFirstLastName, updatedPatient);
+        patientService.updatePatient(id, updatedPatient);
 
-        log.info("/patient PUT request for name {} successful", formattedFirstLastName);
+        log.info("/patient PUT request for ID {} successful", id);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{firstLastName}")
-    public ResponseEntity<Void> deletePatient(@PathVariable String firstLastName) {
-        String formattedFirstLastName = firstLastName.replace("_", " ");
-        log.info("/patient DELETE request for name {}", formattedFirstLastName);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+        log.info("/patient DELETE request for ID {}", id);
 
-        patientService.deletePatient(formattedFirstLastName);
+        patientService.deletePatient(id);
 
-        log.info("/patient DELETE request for name {} successful", formattedFirstLastName);
+        log.info("/patient DELETE request for ID {} successful", id);
         return ResponseEntity.noContent().build();
     }
 }

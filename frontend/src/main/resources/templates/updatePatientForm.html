@@ -75,62 +75,107 @@
     <main>
       <div class="container p-5">
         <div class="contentdata mt-2">
-          <h1 class="text text-center text-success">Patient Info</h1>
+          <h1 class="text text-center text-success">Patient Form</h1>
+          <h3 class="text text-center text-success">
+            Enter patient information
+          </h3>
           <br />
         </div>
 
-        <div class="table-responsive">
-          <table class="table table-striped align-middle">
-            <thead class="table-success">
-              <tr>
-                <th scope="col">First Name</th>
-                <th scope="col">Last Name</th>
-                <th scope="col">Birthdate</th>
-                <th scope="col">Gender</th>
-                <th scope="col">Address</th>
-                <th scope="col">Phone</th>
-                <th scope="col">Update</th>
-                <th scope="col">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:if="${#lists.isEmpty(patientList)}">
-                <td colspan="8">No patients found.</td>
-              </tr>
-              <tr th:each="patient : ${patientList}">
-                <td th:text="${patient.firstName}"></td>
-                <td th:text="${patient.lastName}"></td>
-                <td th:text="${patient.dateOfBirth}"></td>
-                <td th:text="${patient.gender}"></td>
-                <td th:text="${patient.address}"></td>
-                <td th:text="${patient.phone}"></td>
-                <td>
-                  <a
-                    class="btn btn-outline-success btn-sm"
-                    th:href="@{/updatePatientForm(id=${patient.id})}"
-                    >Update</a
-                  >
-                </td>
-                <td>
-                  <form
-                    th:action="@{/patients/{id}/delete(id=${patient.id})}"
-                    method="post"
-                  >
-                    <button class="btn btn-outline-danger btn-sm" type="submit">
-                      Delete
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="container p-5">
-        <a class="w-20 border btn btn-success" href="/createPatientForm"
-          >Add New Patient</a
+        <form
+          action="#"
+          th:action="@{/patients/{id}(id=${patient.id})}"
+          th:object="${patient}"
+          method="post"
+          class="w-25"
         >
+          <input type="hidden" name="_method" value="put" />
+          <div class="mb-3">
+            <p class="mb-0">First Name:</p>
+            <input
+              name="firstName"
+              type="text"
+              class="form-control"
+              placeholder="Enter patient first name"
+              readonly
+              th:field="*{firstName}"
+            />
+          </div>
+          <div class="mb-3">
+            <p class="mb-0">Last Name:</p>
+            <input
+              name="lastName"
+              type="text"
+              class="form-control"
+              placeholder="Enter patient last name"
+              readonly
+              th:field="*{lastName}"
+            />
+          </div>
+          <div class="mb-3">
+            <p class="mb-0">Date of Birth:</p>
+            <input
+              name="dateOfBirth"
+              type="text"
+              class="w-120"
+              placeholder="MM/DD/YYYY"
+              th:field="*{dateOfBirth}"
+            />
+          </div>
+          <div class="mb-3">
+            <p class="mb-0">Gender:</p>
+            <input
+              name="gender"
+              type="radio"
+              class="w-120"
+              value="M"
+              id="M"
+              th:field="*{gender}"
+            />
+            <label for="M">Male</label>
+            <input
+              name="gender"
+              type="radio"
+              class="w-120"
+              value="F"
+              id="F"
+              th:field="*{gender}"
+            />
+            <label for="F">Female</label>
+            <input
+              name="gender"
+              type="radio"
+              class="w-120"
+              value="O"
+              id="O"
+              th:field="*{gender}"
+            />
+            <label for="O">Other</label>
+          </div>
+          <div class="mb-3">
+            <p class="mb-0">Address:</p>
+            <input
+              name="address"
+              type="text"
+              class="w-120"
+              placeholder="Enter patient address"
+              th:field="*{address}"
+            />
+          </div>
+          <div class="mb-3">
+            <p class="mb-0">Phone:</p>
+            <input
+              name="phone"
+              type="text"
+              class="w-120"
+              placeholder="1234567890"
+              th:field="*{phone}"
+            />
+          </div>
+
+          <br />
+          <button class="btn btn-success" type="submit">Update</button>
+        </form>
       </div>
     </main>
     <footer class="bg-success fixed-bottom">

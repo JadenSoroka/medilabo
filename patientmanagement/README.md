@@ -1,11 +1,13 @@
 # MediLabo
 
-To start the mongodb:
+To start the postgresql db:
 ```
-sudo systemctl start mongod
+sudo systemctl start postgresql
+sudo systemctl status postgresql
 ```
 
 To access the DB through the terminal
 ```
-mongosh medilabo
+sudo su postgres
+psql
 ```

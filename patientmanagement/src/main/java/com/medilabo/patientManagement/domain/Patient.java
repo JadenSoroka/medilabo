@@ -1,24 +1,32 @@
 package com.medilabo.patientManagement.domain;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@Document("patients")
-public record Patient(
+@Entity
+@Table(name = "patients")
+@Data
+@RequiredArgsConstructor
+public class Patient {
     @Id
     @Null
-    String id,
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
     @NotNull
-    String firstName,
+    String firstName;
     @NotNull
-    String lastName,
+    String lastName;
     @NotNull
-    String dateOfBirth,
+    String dateOfBirth;
     @NotNull
-    Character gender,
-    String address,
-    String phone
-) {}
+    Character gender;
+    String address;
+    String phone;
+}

@@ -1,5 +1,7 @@
 package com.medilabo.patientManagement.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.medilabo.patientManagement.domain.Patient;
@@ -16,46 +18,51 @@ public class PatientService {
         this.patientRepository = patientRepository;
     }
 
+    // Future scenario: Paginate response
+    public List<Patient> getAllPatients() {
+        return patientRepository.findAll();
+    }
+
+    // Future scenario: Build DB query to find patient by first and last name instead of filtering in memory
     public Patient getPatientByFirstLastName(String firstLastName) {
-        System.out.println("PatientService.getPatientByFirstLastName called with name: " + firstLastName);
         return patientRepository.findAll().stream()
-            .filter(patient -> (patient.firstName() + " " + patient.lastName()).equals(firstLastName))
+            .filter(patient -> (patient.getFirstName() + " " + patient.getLastName()).equals(firstLastName))
             .findFirst()
             .orElseThrow(() -> new PatientNotFoundException("Patient " + firstLastName + " not found"));
     }
 
     public void createPatient(Patient newPatient) throws DuplicatePatientException {
         patientRepository.findAll().stream()
-            .filter(patient -> (patient.firstName() + " " + patient.lastName()).equals(newPatient.firstName() + " " + newPatient.lastName()))
+            .filter(patient -> (patient.getFirstName() + " " + patient.getLastName()).equals(newPatient.getFirstName() + " " + newPatient.getLastName()))
             .findFirst()
             .ifPresent(existingPatient -> {
                 throw new DuplicatePatientException(
-                    "Patient " + newPatient.firstName() + " " + newPatient.lastName() + " already exists"
+                    "Patient " + newPatient.getFirstName() + " " + newPatient.getLastName() + " already exists"
                 );
             });
         patientRepository.save(newPatient);
     }
 
-    public void updatePatient(String formattedFirstLastName, Patient updatedPatient) {
+    public void updatePatient(Long id, Patient updatedPatient) {
         patientRepository.findAll().stream()
-            .filter(patient -> (patient.firstName() + " " + patient.lastName()).equals(formattedFirstLastName))
+            .filter(patient -> patient.getId().equals(id))
             .findFirst()
             .ifPresentOrElse(existingPatient -> {
                 patientRepository.delete(existingPatient);
                 patientRepository.save(updatedPatient);
             }, () -> {
-                throw new PatientNotFoundException("Patient " + formattedFirstLastName + " not found");
+                throw new PatientNotFoundException("Patient with ID " + id + " not found");
             });
     }
 
-    public void deletePatient(String formattedFirstLastName) {
+    public void deletePatient(Long id) {
         patientRepository.findAll().stream()
-            .filter(patient -> (patient.firstName() + " " + patient.lastName()).equals(formattedFirstLastName))
+            .filter(patient -> patient.getId().equals(id))
             .findFirst()
             .ifPresentOrElse(existingPatient -> {
                 patientRepository.delete(existingPatient);
             }, () -> {
-                throw new PatientNotFoundException("Patient " + formattedFirstLastName + " not found");
+                throw new PatientNotFoundException("Patient with ID " + id + " not found");
             });
     }
 
