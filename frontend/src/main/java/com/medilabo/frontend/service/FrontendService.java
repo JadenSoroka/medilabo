@@ -14,7 +14,7 @@ public class FrontendService {
     public Patient getPatientInfo(String fullName) {
         String formattedFullName = fullName.replace(" ", "_");
         return this.webClient.get()
-                .uri("/patients/" + formattedFullName)
+                .uri("/api/patients/" + formattedFullName)
                 .retrieve()
                 .bodyToMono(Patient.class)
                 .block();
@@ -22,7 +22,7 @@ public class FrontendService {
 
     public List<Patient> getAllPatients() {
         return this.webClient.get()
-                .uri("/patients")
+                .uri("/api/patients")
                 .retrieve()
                 .bodyToFlux(Patient.class)
                 .collectList()
@@ -31,7 +31,7 @@ public class FrontendService {
 
     public Patient createPatient(Patient patient) {
         return this.webClient.post()
-                .uri("/patients")
+                .uri("/api/patients")
                 .bodyValue(patient)
                 .retrieve()
                 .bodyToMono(Patient.class)
@@ -40,7 +40,7 @@ public class FrontendService {
 
     public void updatePatient(Long id, Patient patient) {
         this.webClient.put()
-                .uri("/patients/" + id)
+                .uri("/api/patients/" + id)
                 .bodyValue(patient)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -49,7 +49,7 @@ public class FrontendService {
 
     public void deletePatient(Long id) {
         this.webClient.delete()
-                .uri("/patients/" + id)
+                .uri("/api/patients/" + id)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();

@@ -19,13 +19,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
-
 
 @RestController
-@RequestMapping("/patients")
+@RequestMapping("/api/patients")
 @Slf4j
 @Validated
 public class PatientController {
@@ -39,21 +35,21 @@ public class PatientController {
     @GetMapping("/{firstLastName}")
     public ResponseEntity<Patient> readPatient(@PathVariable String firstLastName) {
         String formattedFirstLastName = firstLastName.replace("_", " ");
-        log.info("/patient GET request for name {}", formattedFirstLastName);
+        log.info("/api/patients/{} GET request for name {}", formattedFirstLastName, formattedFirstLastName);
 
         Patient patient = patientService.getPatientByFirstLastName(formattedFirstLastName);
 
-        log.info("/patient GET request for name {} successful", formattedFirstLastName);
+        log.info("/api/patients/{} GET request for name {} successful", formattedFirstLastName, formattedFirstLastName);
         return ResponseEntity.ok(patient);
     }
 
     @GetMapping
     public ResponseEntity<List<Patient>> getAllPatients() {
-        log.info("/patient GET request for all patients");
+        log.info("/api/patients GET request for all patients");
 
         List<Patient> patients = patientService.getAllPatients();
 
-        log.info("/patient GET request for all patients successful, found {} patients", patients.size());
+        log.info("/api/patients GET request for all patients successful, found {} patients", patients.size());
         return ResponseEntity.ok(patients);
     }
     
@@ -61,31 +57,31 @@ public class PatientController {
     @PostMapping
     public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient newPatient) {
         String formattedFirstLastName = newPatient.getFirstName() + " " + newPatient.getLastName();
-        log.info("/patient POST request for name {}", formattedFirstLastName);
+        log.info("/api/patients POST request for name {}", formattedFirstLastName);
 
         patientService.createPatient(newPatient);
 
-        log.info("/patient POST request for name {} successful", formattedFirstLastName);
+        log.info("/api/patients POST request for name {} successful", formattedFirstLastName);
         return ResponseEntity.ok(newPatient);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updatePatient(@PathVariable Long id, @Valid @RequestBody Patient updatedPatient) {
-        log.info("/patient PUT request for ID {}", id);
+        log.info("/api/patients/{} PUT request for ID {}", id, id);
 
         patientService.updatePatient(id, updatedPatient);
 
-        log.info("/patient PUT request for ID {} successful", id);
+        log.info("/api/patients/{} PUT request for ID {} successful", id, id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
-        log.info("/patient DELETE request for ID {}", id);
+        log.info("/api/patients/{} DELETE request for ID {}", id, id);
 
         patientService.deletePatient(id);
 
-        log.info("/patient DELETE request for ID {} successful", id);
+        log.info("/api/patients/{} DELETE request for ID {} successful", id, id);
         return ResponseEntity.noContent().build();
     }
 }
