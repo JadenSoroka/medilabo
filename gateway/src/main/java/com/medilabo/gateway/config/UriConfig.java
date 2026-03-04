@@ -1,15 +1,19 @@
 package com.medilabo.gateway.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties
-@EnableConfigurationProperties(UriConfig.class)
 public class UriConfig {
-    private final String backend = "http://localhost:9090";
-    private final String frontend = "http://localhost:3000";
+    private final String backend;
+    private final String frontend;
+
+    public UriConfig(
+            @Value("${uri.backend:http://localhost:9090}") String backend,
+            @Value("${uri.frontend:http://localhost:3000}") String frontend) {
+        this.backend = backend;
+        this.frontend = frontend;
+    }
 
     public String getBackend() {
         return backend;

@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: medilabo-postgres
+    environment:
+      POSTGRES_DB: medilabo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  patientmanagement:
+    build:
+      context: ./patientmanagement
+      dockerfile: Dockerfile
+    container_name: medilabo-patient-management
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/medilabo
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "9090:9090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: medilabo-gateway
+    environment:
+      URI_BACKEND: http://patientmanagement:9090
+      URI_FRONTEND: http://frontend:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      patientmanagement:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medilabo-frontend
+    environment:
+      GATEWAY_BASE_URL: http://gateway:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      gateway:
+        condition: service_started
+
+volumes:
+  postgres_data:

@@ -62,6 +62,38 @@ mvn clean package
 mvn test
 ```
 
+## Docker
+
+The gateway includes a multi-stage Dockerfile that builds and packages the application in an optimized container.
+
+### Build the Docker image
+
+```bash
+docker build -t medilabo-gateway .
+```
+
+### Run the Docker container
+
+```bash
+docker run -d -p 8080:8080 --name medilabo-gateway medilabo-gateway
+```
+
+To connect to backend and frontend services running on the host machine:
+
+```bash
+docker run -d -p 8080:8080 \
+  -e BACKEND_URI=http://host.docker.internal:9090 \
+  -e FRONTEND_URI=http://host.docker.internal:3000 \
+  --name medilabo-gateway \
+  medilabo-gateway
+```
+
+### Docker features
+
+- **Multi-stage build:** Uses JDK 21 for building, JRE 21 for runtime (smaller image)
+- **Layer caching:** Dependencies are cached separately from source code for faster rebuilds
+- **JVM optimization:** Pre-configured memory settings for container environments
+
 ## Usage Examples
 
 Assuming the gateway runs on port 8080:

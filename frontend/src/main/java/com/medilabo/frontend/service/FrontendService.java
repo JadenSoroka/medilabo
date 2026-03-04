@@ -2,6 +2,7 @@ package com.medilabo.frontend.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -9,7 +10,11 @@ import com.medilabo.frontend.domain.Patient;
 
 @Service
 public class FrontendService {
-    private final WebClient webClient = WebClient.create("http://localhost:8080");
+    private final WebClient webClient;
+
+    public FrontendService(@Value("${gateway.base-url:http://localhost:8080}") String gatewayBaseUrl) {
+        this.webClient = WebClient.create(gatewayBaseUrl);
+    }
 
     public Patient getPatientInfo(String fullName) {
         String formattedFullName = fullName.replace(" ", "_");
