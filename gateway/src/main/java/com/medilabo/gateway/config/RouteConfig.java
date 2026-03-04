@@ -17,6 +17,7 @@ public class RouteConfig {
 						.uri(backendUri))
 				.route("frontend-route", p -> p
 						.path("/**")
+						.filters(f -> f.preserveHostHeader())
 						.uri(frontendUri))
 				.build();
 	}

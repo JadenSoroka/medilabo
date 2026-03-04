@@ -62,7 +62,11 @@ public class FrontendController {
 
     @PostMapping("/patients")
     public String createPatient(@ModelAttribute("patient") Patient patient) {
-        frontendService.createPatient(patient);
+        try {
+            frontendService.createPatient(patient);
+        } catch (Exception e) {
+            log.error("Error creating patient", e);
+        }
         return "redirect:/patient";
     }
 
@@ -77,13 +81,21 @@ public class FrontendController {
                 patient.address(),
                 patient.phone());
 
-        frontendService.updatePatient(id, patientToUpdate);
+        try {
+            frontendService.updatePatient(id, patientToUpdate);
+        } catch (Exception e) {
+            log.error("Error updating patient", e);
+        }
         return "redirect:/patient";
     }
 
     @PostMapping("/patients/{id}/delete")
     public String deletePatient(@PathVariable Long id) {
-        frontendService.deletePatient(id);
+        try {
+            frontendService.deletePatient(id);
+        } catch (Exception e) {
+            log.error("Error deleting patient", e);
+        }
         return "redirect:/patient";
     }
 }
