@@ -10,31 +10,62 @@ Monorepo for a Java/Spring Boot microservices-based medical application.
 
 Each module is an independent Maven Spring Boot project with its own `pom.xml`, source, and tests.
 
-## Run with Docker Compose (root)
+## Docker
 
-Use the root `docker-compose.yml` to run the full stack (frontend, gateway, backend, and PostgreSQL) together.
+All services have been containerized with multi-stage Dockerfiles for optimized builds and deployment.
+
+### Run Full Stack (root docker-compose)
+
+Use the root `docker-compose.yml` to run the complete application stack (frontend, gateway, backend, and PostgreSQL).
 
 From the repository root:
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
-Services:
+Services available:
 
-- Frontend: `http://localhost:3000`
-- Gateway (recommended entry point): `http://localhost:8080`
-- Patient management backend: `http://localhost:9090`
-- PostgreSQL: `localhost:5432`
+- **Gateway (entry point)**: `http://localhost:8080` - Routes all requests to appropriate services
+- **Frontend UI**: `http://localhost:3000` - Direct access to the web interface
+- **Patient Management API**: `http://localhost:9090` - Backend REST API
+- **PostgreSQL**: `localhost:5432` - Database service
 
 Stop the stack:
 
 ```bash
-docker compose down
+docker-compose down
 ```
 
-Stop and remove volumes (reset database data):
+Stop and remove volumes (resets database data):
 
 ```bash
-docker compose down -v
+docker-compose down -v
 ```
+
+### Test Backend + Database Only
+
+For testing just the patient management service with its database, use the docker-compose file in the `patientmanagement/` directory:
+
+```bash
+cd patientmanagement
+docker-compose up --build
+```
+
+This starts only:
+
+- Patient Management API: `http://localhost:9090`
+- PostgreSQL: `localhost:5432`
+
+## Architecture
+
+```
+Client Request
+      ↓
+   Gateway (8080)
+      ↓
+      ├─→ /api/patients/** → Patient Management Service (9090) → PostgreSQL
+      └─→ /**              → Frontend (3000) → Gateway /api/**
+```
+
+All services run in Docker containers with automated dependency management and health checks.
