@@ -1,10 +1,12 @@
 package com.medilabo.gateway;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-public class ApplicationTest {
+@SpringBootTest
+class ApplicationTest {
 
     @Test
-    public void contextLoads() {
+    void contextLoads() {
     }
 }
