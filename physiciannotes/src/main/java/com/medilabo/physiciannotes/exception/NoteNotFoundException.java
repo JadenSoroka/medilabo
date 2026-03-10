@@ -1,0 +1,8 @@
+package com.medilabo.physiciannotes.exception;
+
+public class NoteNotFoundException extends RuntimeException {
+    public NoteNotFoundException(String message) {
+        super(message);
+    }
+
+}

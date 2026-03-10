@@ -1,0 +1,33 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: physiciannotes-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: medilabo
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  physiciannotes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: physiciannotes-app
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+    environment:
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/medilabo
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  mongodb_data:
