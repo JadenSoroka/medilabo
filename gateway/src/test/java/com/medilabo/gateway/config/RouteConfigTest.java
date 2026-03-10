@@ -17,7 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @TestPropertySource(properties = {
         "uri.backend=http://backend.test:9090",
-        "uri.frontend=http://frontend.test:3000"
+        "uri.frontend=http://frontend.test:3000",
+        "uri.physician-notes=http://physician-notes.test:9091"
 })
 class RouteConfigTest {
 
@@ -29,22 +30,34 @@ class RouteConfigTest {
         List<Route> routes = routeLocator.getRoutes().collectList().block();
 
         assertThat(routes).isNotNull();
-        assertThat(routes).hasSize(2);
+        assertThat(routes).hasSize(3);
 
         Map<String, Route> routeById = routes.stream()
                 .collect(Collectors.toMap(Route::getId, Function.identity()));
 
-        assertThat(routeById).containsKeys("backend-route", "frontend-route");
+        assertThat(routeById).containsKeys("backend-route", "physician-notes-route", "frontend-route");
         assertThat(routeById.get("backend-route").getUri().toString()).isEqualTo("http://backend.test:9090");
+        assertThat(routeById.get("physician-notes-route").getUri().toString())
+                .isEqualTo("http://physician-notes.test:9091");
         assertThat(routeById.get("frontend-route").getUri().toString()).isEqualTo("http://frontend.test:3000");
 
         String backendPredicate = routeById.get("backend-route").getPredicate().toString();
+        String physicianNotesPredicate = routeById.get("physician-notes-route").getPredicate().toString();
         String frontendPredicate = routeById.get("frontend-route").getPredicate().toString();
 
         assertThat(backendPredicate).contains("/api/patients/**");
+        assertThat(physicianNotesPredicate).contains("/api/notes/**");
         assertThat(frontendPredicate).contains("/**");
 
+        String backendFilters = routeById.get("backend-route").getFilters().toString();
+        String physicianNotesFilters = routeById.get("physician-notes-route").getFilters().toString();
         String frontendFilters = routeById.get("frontend-route").getFilters().toString();
+        assertThat(backendFilters).contains("CircuitBreaker");
+        assertThat(backendFilters).contains("forward:/fallback");
+        assertThat(physicianNotesFilters).contains("CircuitBreaker");
+        assertThat(physicianNotesFilters).contains("forward:/fallback");
         assertThat(frontendFilters).contains("PreserveHostHeader");
+        assertThat(frontendFilters).contains("CircuitBreaker");
+        assertThat(frontendFilters).contains("forward:/fallback");
     }
 }

@@ -31,6 +31,34 @@ services:
       postgres:
         condition: service_healthy
 
+  mongodb:
+    image: mongo:7
+    container_name: medilabo-mongodb
+    environment:
+      MONGO_INITDB_DATABASE: medilabo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  physiciannotes:
+    build:
+      context: ./physiciannotes
+      dockerfile: Dockerfile
+    container_name: medilabo-physician-notes
+    environment:
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/medilabo
+    ports:
+      - "9091:9091"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
   gateway:
     build:
       context: ./gateway
@@ -39,6 +67,7 @@ services:
     environment:
       URI_BACKEND: http://patientmanagement:9090
       URI_FRONTEND: http://frontend:3000
+      URI_PHYSICIAN_NOTES: http://physiciannotes:9091
     ports:
       - "8080:8080"
     depends_on:
@@ -60,3 +89,4 @@ services:
 
 volumes:
   postgres_data:
+  mongodb_data:

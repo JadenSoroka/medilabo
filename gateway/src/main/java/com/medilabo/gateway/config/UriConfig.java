@@ -7,12 +7,15 @@ import org.springframework.context.annotation.Configuration;
 public class UriConfig {
     private final String backend;
     private final String frontend;
+    private final String physicianNotes;
 
     public UriConfig(
             @Value("${uri.backend:http://localhost:9090}") String backend,
-            @Value("${uri.frontend:http://localhost:3000}") String frontend) {
+            @Value("${uri.frontend:http://localhost:3000}") String frontend,
+            @Value("${uri.physician-notes:http://localhost:9091}") String physicianNotes) {
         this.backend = backend;
         this.frontend = frontend;
+        this.physicianNotes = physicianNotes;
     }
 
     public String getBackend() {
@@ -21,5 +24,9 @@ public class UriConfig {
 
     public String getFrontend() {
         return frontend;
+    }
+
+    public String getPhysicianNotes() {
+        return physicianNotes;
     }
 }
