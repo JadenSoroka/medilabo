@@ -83,14 +83,14 @@
           <table class="table table-striped align-middle">
             <thead class="table-success">
               <tr>
+                <th scope="col">Notes</th>
                 <th scope="col">First Name</th>
                 <th scope="col">Last Name</th>
                 <th scope="col">Birthdate</th>
                 <th scope="col">Gender</th>
                 <th scope="col">Address</th>
                 <th scope="col">Phone</th>
-                <th scope="col">Update</th>
-                <th scope="col">Delete</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -98,23 +98,29 @@
                 <td colspan="8">No patients found.</td>
               </tr>
               <tr th:each="patient : ${patientList}">
+                <td>
+                  <a
+                    class="btn btn-outline-primary btn-sm"
+                    th:href="@{/patientNotes/{id}(id=${patient.id})}"
+                    >View</a
+                  >
+                </td>
                 <td th:text="${patient.firstName}"></td>
                 <td th:text="${patient.lastName}"></td>
                 <td th:text="${patient.dateOfBirth}"></td>
                 <td th:text="${patient.gender}"></td>
                 <td th:text="${patient.address}"></td>
                 <td th:text="${patient.phone}"></td>
-                <td>
+                <td class="d-flex gap-2">
                   <a
                     class="btn btn-outline-success btn-sm"
                     th:href="@{/updatePatientForm(id=${patient.id})}"
                     >Update</a
                   >
-                </td>
-                <td>
                   <form
                     th:action="@{/patients/{id}/delete(id=${patient.id})}"
                     method="post"
+                    class="m-0"
                   >
                     <button class="btn btn-outline-danger btn-sm" type="submit">
                       Delete

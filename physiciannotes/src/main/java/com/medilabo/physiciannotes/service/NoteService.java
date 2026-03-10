@@ -25,9 +25,6 @@ public class NoteService {
 
     public List<Note> getNoteByPatId(Long patId) {
         List<Note> notes = noteRepository.findAllByPatId(patId);
-        if (notes == null || notes.isEmpty()) {
-            throw new NoteNotFoundException("Note not found for patId: " + patId);
-        }
         return notes;
     }
 

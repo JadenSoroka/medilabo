@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.util.List;
 
+import com.medilabo.frontend.domain.Note;
 import com.medilabo.frontend.domain.Patient;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -20,30 +21,40 @@ import org.junit.jupiter.api.Test;
 
 class FrontendServiceTests {
 
-    private MockWebServer mockWebServer;
+    private MockWebServer patientMockServer;
+    private MockWebServer notesMockServer;
     private FrontendService frontendService;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() throws IOException {
-        mockWebServer = new MockWebServer();
-        mockWebServer.start();
-        String baseUrl = mockWebServer.url("/").toString();
-        if (baseUrl.endsWith("/")) {
-            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        patientMockServer = new MockWebServer();
+        patientMockServer.start();
+        notesMockServer = new MockWebServer();
+        notesMockServer.start();
+
+        String patientBaseUrl = patientMockServer.url("/").toString();
+        if (patientBaseUrl.endsWith("/")) {
+            patientBaseUrl = patientBaseUrl.substring(0, patientBaseUrl.length() - 1);
         }
-        frontendService = new FrontendService(baseUrl);
+        String notesBaseUrl = notesMockServer.url("/").toString();
+        if (notesBaseUrl.endsWith("/")) {
+            notesBaseUrl = notesBaseUrl.substring(0, notesBaseUrl.length() - 1);
+        }
+
+        frontendService = new FrontendService(patientBaseUrl, notesBaseUrl);
         objectMapper = new ObjectMapper();
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        mockWebServer.shutdown();
+        patientMockServer.shutdown();
+        notesMockServer.shutdown();
     }
 
     @Test
     void getPatientInfoFormatsNameAndParsesResponse() throws Exception {
-        mockWebServer.enqueue(new MockResponse()
+        patientMockServer.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .setHeader("Content-Type", "application/json")
                 .setBody(
@@ -51,7 +62,7 @@ class FrontendServiceTests {
 
         Patient patient = frontendService.getPatientInfo("John Doe");
 
-        RecordedRequest request = mockWebServer.takeRequest();
+        RecordedRequest request = patientMockServer.takeRequest();
         assertEquals("GET", request.getMethod());
         assertEquals("/api/patients/John_Doe", request.getPath());
         assertNotNull(patient);
@@ -66,7 +77,7 @@ class FrontendServiceTests {
 
     @Test
     void getAllPatientsReturnsList() throws Exception {
-        mockWebServer.enqueue(new MockResponse()
+        patientMockServer.enqueue(new MockResponse()
                 .setResponseCode(200)
                 .setHeader("Content-Type", "application/json")
                 .setBody(
@@ -74,7 +85,7 @@ class FrontendServiceTests {
 
         List<Patient> patients = frontendService.getAllPatients();
 
-        RecordedRequest request = mockWebServer.takeRequest();
+        RecordedRequest request = patientMockServer.takeRequest();
         assertEquals("GET", request.getMethod());
         assertEquals("/api/patients", request.getPath());
         assertEquals(1, patients.size());
@@ -82,8 +93,27 @@ class FrontendServiceTests {
     }
 
     @Test
+    void getPatientNotesReturnsList() throws Exception {
+        notesMockServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(
+                        "[{\"noteId\":\"abc1\",\"patId\":5,\"patient\":\"John Doe\",\"note\":\"Feeling well\"}]"));
+
+        List<Note> notes = frontendService.getPatientNotes(5L);
+
+        RecordedRequest request = notesMockServer.takeRequest();
+        assertEquals("GET", request.getMethod());
+        assertEquals("/api/notes/5", request.getPath());
+        assertEquals(1, notes.size());
+        assertEquals("abc1", notes.get(0).noteId());
+        assertEquals(5L, notes.get(0).patId());
+        assertEquals("Feeling well", notes.get(0).note());
+    }
+
+    @Test
     void createPatientPostsBodyAndReturnsPatient() throws Exception {
-        mockWebServer.enqueue(new MockResponse()
+        patientMockServer.enqueue(new MockResponse()
                 .setResponseCode(201)
                 .setHeader("Content-Type", "application/json")
                 .setBody(
@@ -92,7 +122,7 @@ class FrontendServiceTests {
         Patient requestPatient = new Patient(null, "Jane", "Doe", "02/02/1990", 'F', "Boston", "555-666");
         Patient created = frontendService.createPatient(requestPatient);
 
-        RecordedRequest request = mockWebServer.takeRequest();
+        RecordedRequest request = patientMockServer.takeRequest();
         assertEquals("POST", request.getMethod());
         assertEquals("/api/patients", request.getPath());
 
@@ -109,13 +139,56 @@ class FrontendServiceTests {
     }
 
     @Test
+    void createNotePostsBodyToNotesService() throws Exception {
+        notesMockServer.enqueue(new MockResponse().setResponseCode(201));
+
+        Note note = new Note(null, 7L, "Jane Doe", "Patient reported headache");
+        frontendService.createNote(note);
+
+        RecordedRequest request = notesMockServer.takeRequest();
+        assertEquals("POST", request.getMethod());
+        assertEquals("/api/notes", request.getPath());
+
+        JsonNode payload = objectMapper.readTree(request.getBody().readUtf8());
+        assertEquals(7, payload.get("patId").asLong());
+        assertEquals("Jane Doe", payload.get("patient").asText());
+        assertEquals("Patient reported headache", payload.get("note").asText());
+    }
+
+    @Test
+    void updateNoteSendsPutRequest() throws Exception {
+        notesMockServer.enqueue(new MockResponse().setResponseCode(200));
+
+        Note note = new Note("abc1", 7L, "Jane Doe", "Updated note content");
+        frontendService.updateNote("abc1", note);
+
+        RecordedRequest request = notesMockServer.takeRequest();
+        assertEquals("PUT", request.getMethod());
+        assertEquals("/api/notes/abc1", request.getPath());
+
+        JsonNode payload = objectMapper.readTree(request.getBody().readUtf8());
+        assertEquals("Updated note content", payload.get("note").asText());
+    }
+
+    @Test
+    void deleteNoteSendsDeleteRequest() throws Exception {
+        notesMockServer.enqueue(new MockResponse().setResponseCode(200));
+
+        frontendService.deleteNote("abc1");
+
+        RecordedRequest request = notesMockServer.takeRequest();
+        assertEquals("DELETE", request.getMethod());
+        assertEquals("/api/notes/abc1", request.getPath());
+    }
+
+    @Test
     void updatePatientSendsPutRequest() throws Exception {
-        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        patientMockServer.enqueue(new MockResponse().setResponseCode(200));
 
         Patient requestPatient = new Patient(null, "Sam", "Lee", "03/03/2000", 'O', "Berlin", "777-888");
         frontendService.updatePatient(9L, requestPatient);
 
-        RecordedRequest request = mockWebServer.takeRequest();
+        RecordedRequest request = patientMockServer.takeRequest();
         assertEquals("PUT", request.getMethod());
         assertEquals("/api/patients/9", request.getPath());
 
@@ -126,11 +199,11 @@ class FrontendServiceTests {
 
     @Test
     void deletePatientSendsDeleteRequest() throws Exception {
-        mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+        patientMockServer.enqueue(new MockResponse().setResponseCode(200));
 
         frontendService.deletePatient(4L);
 
-        RecordedRequest request = mockWebServer.takeRequest();
+        RecordedRequest request = patientMockServer.takeRequest();
         assertEquals("DELETE", request.getMethod());
         assertEquals("/api/patients/4", request.getPath());
     }

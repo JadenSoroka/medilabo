@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
+import com.medilabo.frontend.domain.Note;
 import com.medilabo.frontend.domain.Patient;
 import com.medilabo.frontend.service.FrontendService;
 
@@ -38,10 +38,55 @@ public class FrontendController {
         return "patient";
     }
 
+    @GetMapping("/patientNotes/{patId}")
+    public String getPatientNotesPage(@PathVariable Long patId, Model model) {
+        model.addAttribute("notes", frontendService.getPatientNotes(patId));
+        model.addAttribute("patId", patId);
+        return "patientNotes";
+    }
+
     @GetMapping("/createPatientForm")
     public String createPatientFormPage(Model model) {
         model.addAttribute("patient", new Patient(null, "", "", "", null, "", ""));
         return "createPatientForm";
+    }
+
+    @GetMapping("/createNoteForm")
+    public String createNoteFormPage(@RequestParam Long patId, Model model) {
+        Patient patient = frontendService.getPatientById(patId);
+
+        if (patient == null) {
+            return "redirect:/patient";
+        }
+
+        String patientFullName = patient.firstName() + " " + patient.lastName();
+        model.addAttribute("note", new Note(null, patId, patientFullName, null));
+        return "createNoteForm";
+    }
+
+    @GetMapping("/updateNoteForm")
+    public String updateNoteFormPage(
+            @RequestParam String noteId,
+            @RequestParam Long patId,
+            Model model) {
+        Note note = frontendService.getPatientNotes(patId)
+                .stream()
+                .filter(existingNote -> Objects.equals(existingNote.noteId(), noteId))
+                .findFirst()
+                .orElse(null);
+
+        if (note == null) {
+            return "redirect:/patientNotes/" + patId;
+        }
+
+        Patient patient = frontendService.getPatientById(patId);
+        if (patient != null) {
+            String patientFullName = patient.firstName() + " " + patient.lastName();
+            note = new Note(note.noteId(), note.patId(), patientFullName, note.note());
+        }
+
+        model.addAttribute("note", note);
+        return "updateNoteForm";
     }
 
     @GetMapping("/updatePatientForm")
@@ -68,6 +113,36 @@ public class FrontendController {
             log.error("Error creating patient", e);
         }
         return "redirect:/patient";
+    }
+
+    @PostMapping("/notes")
+    public String createNote(@ModelAttribute("note") Note note) {
+        try {
+            frontendService.createNote(note);
+        } catch (Exception e) {
+            log.error("Error creating note", e);
+        }
+        return "redirect:/patientNotes/" + note.patId();
+    }
+
+    @PostMapping("/notes/{noteId}")
+    public String updateNote(@PathVariable String noteId, @ModelAttribute("note") Note note) {
+        try {
+            frontendService.updateNote(noteId, note);
+        } catch (Exception e) {
+            log.error("Error updating note", e);
+        }
+        return "redirect:/patientNotes/" + note.patId();
+    }
+
+    @PostMapping("/notes/{noteId}/delete")
+    public String deleteNote(@PathVariable String noteId, @RequestParam Long patId) {
+        try {
+            frontendService.deleteNote(noteId);
+        } catch (Exception e) {
+            log.error("Error deleting note", e);
+        }
+        return "redirect:/patientNotes/" + patId;
     }
 
     @PutMapping("/patients/{id}")
@@ -98,4 +173,5 @@ public class FrontendController {
         }
         return "redirect:/patient";
     }
+
 }
