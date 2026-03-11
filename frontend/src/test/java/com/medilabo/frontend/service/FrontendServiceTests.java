@@ -23,6 +23,7 @@ class FrontendServiceTests {
 
     private MockWebServer patientMockServer;
     private MockWebServer notesMockServer;
+    private MockWebServer diabetesRiskMockServer;
     private FrontendService frontendService;
     private ObjectMapper objectMapper;
 
@@ -32,6 +33,8 @@ class FrontendServiceTests {
         patientMockServer.start();
         notesMockServer = new MockWebServer();
         notesMockServer.start();
+        diabetesRiskMockServer = new MockWebServer();
+        diabetesRiskMockServer.start();
 
         String patientBaseUrl = patientMockServer.url("/").toString();
         if (patientBaseUrl.endsWith("/")) {
@@ -42,7 +45,12 @@ class FrontendServiceTests {
             notesBaseUrl = notesBaseUrl.substring(0, notesBaseUrl.length() - 1);
         }
 
-        frontendService = new FrontendService(patientBaseUrl, notesBaseUrl);
+        String diabetesRiskBaseUrl = diabetesRiskMockServer.url("/").toString();
+        if (diabetesRiskBaseUrl.endsWith("/")) {
+            diabetesRiskBaseUrl = diabetesRiskBaseUrl.substring(0, diabetesRiskBaseUrl.length() - 1);
+        }
+
+        frontendService = new FrontendService(patientBaseUrl, notesBaseUrl, diabetesRiskBaseUrl);
         objectMapper = new ObjectMapper();
     }
 
@@ -50,6 +58,7 @@ class FrontendServiceTests {
     void tearDown() throws IOException {
         patientMockServer.shutdown();
         notesMockServer.shutdown();
+        diabetesRiskMockServer.shutdown();
     }
 
     @Test

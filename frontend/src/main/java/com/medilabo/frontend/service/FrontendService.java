@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.medilabo.frontend.domain.DiabetesRiskResponseDTO;
 import com.medilabo.frontend.domain.Note;
 import com.medilabo.frontend.domain.Patient;
 
@@ -16,10 +17,14 @@ public class FrontendService {
 
     private final WebClient physicianNotesWebClient;
 
+    private final WebClient diabetesRiskAssessmentWebClient;
+
     public FrontendService(@Value("${gateway.base-url:http://localhost:9090}") String patientManagementUrl,
-            @Value("${gateway.base-url:http://localhost:9091}") String physicianNotesBaseUrl) {
+            @Value("${gateway.base-url:http://localhost:9091}") String physicianNotesBaseUrl,
+            @Value("${gateway.base-url:http://localhost:9092}") String diabetesRiskAssessmentBaseUrl) {
         this.patientManagementWebClient = WebClient.create(patientManagementUrl);
         this.physicianNotesWebClient = WebClient.create(physicianNotesBaseUrl);
+        this.diabetesRiskAssessmentWebClient = WebClient.create(diabetesRiskAssessmentBaseUrl);
     }
 
     public Patient getPatientInfo(String fullName) {
@@ -105,6 +110,14 @@ public class FrontendService {
                 .uri("/api/patients/" + id)
                 .retrieve()
                 .bodyToMono(Void.class)
+                .block();
+    }
+
+    public DiabetesRiskResponseDTO getDiabetesRiskAssessment(Long patId) {
+        return this.diabetesRiskAssessmentWebClient.get()
+                .uri("/api/risk/" + patId)
+                .retrieve()
+                .bodyToMono(DiabetesRiskResponseDTO.class)
                 .block();
     }
 

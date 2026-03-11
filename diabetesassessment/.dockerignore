@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode
+.idea
+
+# Build output
+target
+
+# Maven wrapper cache and logs
+.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# OS files
+.DS_Store

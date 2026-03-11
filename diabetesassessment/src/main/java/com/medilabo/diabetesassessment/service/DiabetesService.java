@@ -39,9 +39,8 @@ public class DiabetesService {
         
         int riskCount = 0;
         for (String note : notesOnPatient) {
-            System.out.println(note);
             for (String keyword : Constants.DIABETES_RISK_KEYWORDS) {
-                if (note.contains(keyword)) {
+                if (note.toLowerCase().contains(keyword.toLowerCase())) {
                     riskCount++;
                 }
             }
@@ -50,16 +49,16 @@ public class DiabetesService {
         String riskLevel = "None";
         if (riskCount < 2) {
             riskLevel = "None";
-        } else if (riskCount <= 5) {
+        } else if (age > 30 && riskCount <= 5) {
             riskLevel = "Borderline";
         } else if (gender == 'M') {
-            if ((age < 30 && (riskCount == 3 || riskCount == 4)) || (age > 30 && riskCount >= 6)) {
+            if ((age < 30 && (riskCount == 3 || riskCount == 4)) || (age > 30 && riskCount < 8)) {
                 riskLevel = "In Danger";
             } else if ((age < 30 && riskCount >= 5) || (age > 30 && riskCount >= 8)) {
                 riskLevel = "Early Onset";
             }
         } else if (gender == 'F') {
-            if ((age < 30 && (riskCount == 4 || riskCount == 5)) || (age > 30 && riskCount >= 6)) {
+            if ((age < 30 && (riskCount == 4 || riskCount == 5)) || (age > 30 && riskCount < 8)) {
                 riskLevel = "In Danger";
             } else if ((age < 30 && riskCount >= 6) || (age > 30 && riskCount >= 8)) {
                 riskLevel = "Early Onset";

@@ -42,6 +42,7 @@ public class FrontendController {
     public String getPatientNotesPage(@PathVariable Long patId, Model model) {
         model.addAttribute("notes", frontendService.getPatientNotes(patId));
         model.addAttribute("patId", patId);
+        model.addAttribute("diabetesRisk", frontendService.getDiabetesRiskAssessment(patId));
         return "patientNotes";
     }
 

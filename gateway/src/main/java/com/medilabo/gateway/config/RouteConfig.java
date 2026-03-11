@@ -12,6 +12,7 @@ public class RouteConfig {
 		String backendUri = uriConfig.getBackend();
 		String frontendUri = uriConfig.getFrontend();
 		String physicianNotesUri = uriConfig.getPhysicianNotes();
+		String diabetesAssessmentUri = uriConfig.getDiabetesAssessment();
 		return builder.routes()
 				.route("backend-route", p -> p
 						.path("/api/patients/**")
@@ -25,6 +26,12 @@ public class RouteConfig {
 								.setName("physicianNotesCircuitBreaker")
 								.setFallbackUri("forward:/fallback")))
 						.uri(physicianNotesUri))
+				.route("diabetes-risk-assessment-route", p -> p
+						.path("/api/risk/**")
+						.filters(f -> f.circuitBreaker(config -> config
+								.setName("diabetesRiskAssessmentCircuitBreaker")
+								.setFallbackUri("forward:/fallback")))
+						.uri(diabetesAssessmentUri))
 				.route("frontend-route", p -> p
 						.path("/**")
 						.filters(f -> f
