@@ -1,0 +1,234 @@
+{
+  "info": {
+    "_postman_id": "ba8fdd7c-c1cc-4e84-8d74-46f5eaaa9ee4",
+    "name": "MediLabo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "46159695"
+  },
+  "item": [
+    {
+      "name": "Patient Management",
+      "item": [
+        {
+          "name": "Read Patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:9090/api/patients/Josh_Johnson",
+              "host": [
+                "localhost"
+              ],
+              "port": "9090",
+              "path": [
+                "api",
+                "patients",
+                "Josh_Johnson"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Jaden\",\r\n    \"lastName\": \"Soroka\",\r\n    \"dateOfBirth\": \"11/05/2001\",\r\n    \"gender\": \"M\",\r\n    \"address\": \"123 Sesame St\",\r\n    \"phone\": \"1234567890\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:9090/api/patients",
+              "host": [
+                "localhost"
+              ],
+              "port": "9090",
+              "path": [
+                "api",
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstName\": \"Jaden\",\r\n    \"lastName\": \"Soroka\",\r\n    \"dateOfBirth\": \"11/05/2001\",\r\n    \"gender\": \"M\",\r\n    \"address\": \"123 Sesame St\",\r\n    \"phone\": \"0987654321\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:9090/api/patients/14",
+              "host": [
+                "localhost"
+              ],
+              "port": "9090",
+              "path": [
+                "api",
+                "patients",
+                "14"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Patient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "localhost:9090/api/patients/15",
+              "host": [
+                "localhost"
+              ],
+              "port": "9090",
+              "path": [
+                "api",
+                "patients",
+                "15"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Physician Notes",
+      "item": [
+        {
+          "name": "Read All Notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:9091/api/notes",
+              "host": [
+                "localhost"
+              ],
+              "port": "9091",
+              "path": [
+                "api",
+                "notes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read Notes By patId",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Create Note",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"patId\": \"123\",\r\n    \"patient\": \"Jaden\",\r\n    \"note\": \"This patient is feeling bad\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:9091/api/notes",
+              "host": [
+                "localhost"
+              ],
+              "port": "9091",
+              "path": [
+                "api",
+                "notes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update note by noteId",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    {\r\n    \"patId\": \"123\",\r\n    \"patient\": \"Jaden\",\r\n    \"note\": \"New Test Entry\"\r\n}\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:9091/api/notes/123",
+              "host": [
+                "localhost"
+              ],
+              "port": "9091",
+              "path": [
+                "api",
+                "notes",
+                "123"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Note by noteId",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "localhost:9091/api/notes/123",
+              "host": [
+                "localhost"
+              ],
+              "port": "9091",
+              "path": [
+                "api",
+                "notes",
+                "123"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Diabetes Risk Assessment",
+      "item": [
+        {
+          "name": "Get Risk Assessment",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
