@@ -13,23 +13,16 @@ import com.medilabo.frontend.domain.Patient;
 
 @Service
 public class FrontendService {
-    private final WebClient patientManagementWebClient;
 
-    private final WebClient physicianNotesWebClient;
+    private final WebClient gatewayWebClient;
 
-    private final WebClient diabetesRiskAssessmentWebClient;
-
-    public FrontendService(@Value("${gateway.base-url:http://localhost:9090}") String patientManagementUrl,
-            @Value("${gateway.base-url:http://localhost:9091}") String physicianNotesBaseUrl,
-            @Value("${gateway.base-url:http://localhost:9092}") String diabetesRiskAssessmentBaseUrl) {
-        this.patientManagementWebClient = WebClient.create(patientManagementUrl);
-        this.physicianNotesWebClient = WebClient.create(physicianNotesBaseUrl);
-        this.diabetesRiskAssessmentWebClient = WebClient.create(diabetesRiskAssessmentBaseUrl);
+    public FrontendService(@Value("${gateway.base-url:http://localhost:8080}") String gatewayBaseUrl) {
+        this.gatewayWebClient = WebClient.create(gatewayBaseUrl);
     }
 
     public Patient getPatientInfo(String fullName) {
         String formattedFullName = fullName.replace(" ", "_");
-        return this.patientManagementWebClient.get()
+        return this.gatewayWebClient.get()
                 .uri("/api/patients/" + formattedFullName)
                 .retrieve()
                 .bodyToMono(Patient.class)
@@ -37,7 +30,7 @@ public class FrontendService {
     }
 
     public List<Patient> getAllPatients() {
-        return this.patientManagementWebClient.get()
+        return this.gatewayWebClient.get()
                 .uri("/api/patients")
                 .retrieve()
                 .bodyToFlux(Patient.class)
@@ -53,7 +46,7 @@ public class FrontendService {
     }
 
     public List<Note> getPatientNotes(Long patientId) {
-        return this.physicianNotesWebClient.get()
+        return this.gatewayWebClient.get()
                 .uri("/api/notes/" + patientId)
                 .retrieve()
                 .bodyToFlux(Note.class)
@@ -62,7 +55,7 @@ public class FrontendService {
     }
 
     public Patient createPatient(Patient patient) {
-        return this.patientManagementWebClient.post()
+        return this.gatewayWebClient.post()
                 .uri("/api/patients")
                 .bodyValue(patient)
                 .retrieve()
@@ -71,7 +64,7 @@ public class FrontendService {
     }
 
     public void createNote(Note note) {
-        this.physicianNotesWebClient.post()
+        this.gatewayWebClient.post()
                 .uri("/api/notes")
                 .bodyValue(note)
                 .retrieve()
@@ -80,7 +73,7 @@ public class FrontendService {
     }
 
     public void updateNote(String noteId, Note note) {
-        this.physicianNotesWebClient.put()
+        this.gatewayWebClient.put()
                 .uri("/api/notes/" + noteId)
                 .bodyValue(note)
                 .retrieve()
@@ -89,7 +82,7 @@ public class FrontendService {
     }
 
     public void deleteNote(String noteId) {
-        this.physicianNotesWebClient.delete()
+        this.gatewayWebClient.delete()
                 .uri("/api/notes/" + noteId)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -97,7 +90,7 @@ public class FrontendService {
     }
 
     public void updatePatient(Long id, Patient patient) {
-        this.patientManagementWebClient.put()
+        this.gatewayWebClient.put()
                 .uri("/api/patients/" + id)
                 .bodyValue(patient)
                 .retrieve()
@@ -106,7 +99,7 @@ public class FrontendService {
     }
 
     public void deletePatient(Long id) {
-        this.patientManagementWebClient.delete()
+        this.gatewayWebClient.delete()
                 .uri("/api/patients/" + id)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -114,7 +107,7 @@ public class FrontendService {
     }
 
     public DiabetesRiskResponseDTO getDiabetesRiskAssessment(Long patId) {
-        return this.diabetesRiskAssessmentWebClient.get()
+        return this.gatewayWebClient.get()
                 .uri("/api/risk/" + patId)
                 .retrieve()
                 .bodyToMono(DiabetesRiskResponseDTO.class)
