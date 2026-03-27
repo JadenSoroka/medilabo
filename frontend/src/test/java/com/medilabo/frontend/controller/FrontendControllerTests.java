@@ -18,14 +18,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import com.medilabo.frontend.domain.DiabetesRiskResponseDTO;
 import com.medilabo.frontend.domain.Note;
 import com.medilabo.frontend.domain.Patient;
 import com.medilabo.frontend.service.FrontendService;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,11 +41,19 @@ class FrontendControllerTests {
         @MockitoBean
         private FrontendService frontendService;
 
+        private MockHttpSession authenticatedSession;
+
+        @BeforeEach
+        void setUp() {
+                authenticatedSession = new MockHttpSession();
+                authenticatedSession.setAttribute("jwt", "test-token");
+        }
+
         // --- Index ---
 
         @Test
         void indexPageReturnsIndexViewWithMessage() throws Exception {
-                mockMvc.perform(get("/"))
+                mockMvc.perform(get("/").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("index"))
                                 .andExpect(model().attribute("message", equalTo("Hello, World!")));
@@ -57,7 +68,7 @@ class FrontendControllerTests {
 
                 when(frontendService.getAllPatients()).thenReturn(patients);
 
-                mockMvc.perform(get("/patient"))
+                mockMvc.perform(get("/patient").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("patient"))
                                 .andExpect(model().attribute("patientList", patients));
@@ -65,7 +76,7 @@ class FrontendControllerTests {
 
         @Test
         void createPatientFormPageAddsEmptyPatient() throws Exception {
-                mockMvc.perform(get("/createPatientForm"))
+                mockMvc.perform(get("/createPatientForm").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("createPatientForm"))
                                 .andExpect(model().attributeExists("patient"));
@@ -75,7 +86,7 @@ class FrontendControllerTests {
         void updatePatientFormPageRedirectsWhenPatientMissing() throws Exception {
                 when(frontendService.getAllPatients()).thenReturn(List.of());
 
-                mockMvc.perform(get("/updatePatientForm").param("id", "99"))
+                mockMvc.perform(get("/updatePatientForm").param("id", "99").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patient"));
         }
@@ -85,7 +96,7 @@ class FrontendControllerTests {
                 Patient patient = new Patient(5L, "John", "Smith", "01/01/1970", 'M', "Paris", "333-444");
                 when(frontendService.getAllPatients()).thenReturn(List.of(patient));
 
-                mockMvc.perform(get("/updatePatientForm").param("id", "5"))
+                mockMvc.perform(get("/updatePatientForm").param("id", "5").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("updatePatientForm"))
                                 .andExpect(model().attribute("patient", patient));
@@ -99,7 +110,7 @@ class FrontendControllerTests {
                                 .param("dateOfBirth", "02/02/1990")
                                 .param("gender", "F")
                                 .param("address", "Boston")
-                                .param("phone", "555-666"))
+                                .param("phone", "555-666").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patient"));
 
@@ -117,7 +128,7 @@ class FrontendControllerTests {
                                 .param("dateOfBirth", "03/03/2000")
                                 .param("gender", "O")
                                 .param("address", "Berlin")
-                                .param("phone", "777-888"))
+                                .param("phone", "777-888").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patient"));
 
@@ -134,7 +145,7 @@ class FrontendControllerTests {
 
         @Test
         void deletePatientCallsServiceAndRedirects() throws Exception {
-                mockMvc.perform(post("/patients/12/delete"))
+                mockMvc.perform(post("/patients/12/delete").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patient"));
 
@@ -153,7 +164,7 @@ class FrontendControllerTests {
                                 .param("dateOfBirth", "04/04/1994")
                                 .param("gender", "M")
                                 .param("address", "Rome")
-                                .param("phone", "000-111"))
+                                .param("phone", "000-111").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patient"));
 
@@ -167,8 +178,10 @@ class FrontendControllerTests {
         void patientNotesPageAddsNotesAndPatId() throws Exception {
                 List<Note> notes = List.of(new Note("n1", 3L, "John Doe", "Feeling well"));
                 when(frontendService.getPatientNotes(3L)).thenReturn(notes);
+                when(frontendService.getDiabetesRiskAssessment(3L))
+                                .thenReturn(new DiabetesRiskResponseDTO(3L, "None"));
 
-                mockMvc.perform(get("/patientNotes/3"))
+                mockMvc.perform(get("/patientNotes/3").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("patientNotes"))
                                 .andExpect(model().attribute("notes", notes))
@@ -180,7 +193,7 @@ class FrontendControllerTests {
                 Patient patient = new Patient(5L, "John", "Doe", "01/01/1970", 'M', "Paris", "333-444");
                 when(frontendService.getPatientById(5L)).thenReturn(patient);
 
-                mockMvc.perform(get("/createNoteForm").param("patId", "5"))
+                mockMvc.perform(get("/createNoteForm").param("patId", "5").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("createNoteForm"))
                                 .andExpect(model().attribute("note", new Note(null, 5L, "John Doe", null)));
@@ -193,7 +206,7 @@ class FrontendControllerTests {
                 when(frontendService.getPatientNotes(5L)).thenReturn(List.of(note));
                 when(frontendService.getPatientById(5L)).thenReturn(patient);
 
-                mockMvc.perform(get("/updateNoteForm").param("noteId", "n1").param("patId", "5"))
+                mockMvc.perform(get("/updateNoteForm").param("noteId", "n1").param("patId", "5").session(authenticatedSession))
                                 .andExpect(status().isOk())
                                 .andExpect(view().name("updateNoteForm"))
                                 .andExpect(model().attribute("note", note));
@@ -203,7 +216,7 @@ class FrontendControllerTests {
         void updateNoteFormPageRedirectsWhenNoteNotFound() throws Exception {
                 when(frontendService.getPatientNotes(5L)).thenReturn(List.of());
 
-                mockMvc.perform(get("/updateNoteForm").param("noteId", "missing").param("patId", "5"))
+                mockMvc.perform(get("/updateNoteForm").param("noteId", "missing").param("patId", "5").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patientNotes/5"));
         }
@@ -213,7 +226,7 @@ class FrontendControllerTests {
                 mockMvc.perform(post("/notes")
                                 .param("patId", "5")
                                 .param("patient", "John Doe")
-                                .param("note", "Patient feeling better"))
+                                .param("note", "Patient feeling better").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patientNotes/5"));
 
@@ -225,7 +238,7 @@ class FrontendControllerTests {
                 mockMvc.perform(post("/notes/n1")
                                 .param("patId", "5")
                                 .param("patient", "John Doe")
-                                .param("note", "Updated note content"))
+                                .param("note", "Updated note content").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patientNotes/5"));
 
@@ -234,10 +247,34 @@ class FrontendControllerTests {
 
         @Test
         void deleteNoteCallsServiceAndRedirects() throws Exception {
-                mockMvc.perform(post("/notes/n1/delete").param("patId", "5"))
+                mockMvc.perform(post("/notes/n1/delete").param("patId", "5").session(authenticatedSession))
                                 .andExpect(status().is3xxRedirection())
                                 .andExpect(redirectedUrl("/patientNotes/5"));
 
                 verify(frontendService).deleteNote("n1");
+        }
+
+        // --- Auth ---
+
+        @Test
+        void unauthenticatedRequestRedirectsToLogin() throws Exception {
+                mockMvc.perform(get("/"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/login"));
+        }
+
+        @Test
+        void loginPageIsAccessibleWithoutSession() throws Exception {
+                mockMvc.perform(get("/login"))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("login"));
+        }
+
+        @Test
+        void loginPageShowsErrorParam() throws Exception {
+                mockMvc.perform(get("/login").param("error", ""))
+                                .andExpect(status().isOk())
+                                .andExpect(view().name("login"))
+                                .andExpect(model().attribute("error", true));
         }
 }

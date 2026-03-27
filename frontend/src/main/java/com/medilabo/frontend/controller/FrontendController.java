@@ -15,6 +15,7 @@ import com.medilabo.frontend.domain.Note;
 import com.medilabo.frontend.domain.Patient;
 import com.medilabo.frontend.service.FrontendService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -24,6 +25,41 @@ public class FrontendController {
 
     public FrontendController(FrontendService frontendService) {
         this.frontendService = frontendService;
+    }
+
+    @GetMapping("/login")
+    public String loginPage(@RequestParam(required = false) String error,
+                            @RequestParam(required = false) String logout,
+                            Model model) {
+        if (error != null) {
+            model.addAttribute("error", true);
+        }
+        if (logout != null) {
+            model.addAttribute("logout", true);
+        }
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestParam String username,
+                        @RequestParam String password,
+                        HttpSession session) {
+        try {
+            String token = frontendService.authenticate(username, password);
+            if (token != null) {
+                session.setAttribute("jwt", token);
+                return "redirect:/";
+            }
+        } catch (Exception e) {
+            log.error("Authentication failed", e);
+        }
+        return "redirect:/login?error";
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login?logout";
     }
 
     @GetMapping("/")

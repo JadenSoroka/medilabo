@@ -1,15 +1,22 @@
 package com.medilabo.frontend.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.medilabo.frontend.domain.DiabetesRiskResponseDTO;
 import com.medilabo.frontend.domain.Note;
 import com.medilabo.frontend.domain.Patient;
+
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class FrontendService {
@@ -17,7 +24,43 @@ public class FrontendService {
     private final WebClient gatewayWebClient;
 
     public FrontendService(@Value("${gateway.base-url:http://localhost:8080}") String gatewayBaseUrl) {
-        this.gatewayWebClient = WebClient.create(gatewayBaseUrl);
+        this.gatewayWebClient = WebClient.builder()
+                .baseUrl(gatewayBaseUrl)
+                .filter((request, next) -> {
+                    String jwt = getJwtFromSession();
+                    if (jwt != null) {
+                        ClientRequest modified = ClientRequest.from(request)
+                                .header("Authorization", "Bearer " + jwt)
+                                .build();
+                        return next.exchange(modified);
+                    }
+                    return next.exchange(request);
+                })
+                .build();
+    }
+
+    private String getJwtFromSession() {
+        ServletRequestAttributes attrs =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs != null) {
+            HttpSession session = attrs.getRequest().getSession(false);
+            if (session != null) {
+                return (String) session.getAttribute("jwt");
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String authenticate(String username, String password) {
+        Map<String, String> response = this.gatewayWebClient.post()
+                .uri("/auth/login")
+                .bodyValue(Map.of("username", username, "password", password))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse -> clientResponse.createException())
+                .bodyToMono(Map.class)
+                .block();
+        return response != null ? response.get("token") : null;
     }
 
     public Patient getPatientInfo(String fullName) {
