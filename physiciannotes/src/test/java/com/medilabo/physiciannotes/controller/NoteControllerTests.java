@@ -19,17 +19,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.medilabo.physiciannotes.config.SecurityConfig;
 import com.medilabo.physiciannotes.domain.Note;
 import com.medilabo.physiciannotes.exception.NoteNotFoundException;
+import com.medilabo.physiciannotes.security.JwtAuthenticationFilter;
+import com.medilabo.physiciannotes.security.JwtUtil;
 import com.medilabo.physiciannotes.service.NoteService;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(NoteController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 class NoteControllerTests {
 
     @Autowired
@@ -41,7 +44,11 @@ class NoteControllerTests {
     @MockitoBean
     private NoteService noteService;
 
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
     @Test
+    @WithMockUser
     void getAllNotesReturnsOkAndBody() throws Exception {
         Note note = buildNote("n1", 4L, "John Doe", "regular follow-up");
         when(noteService.getAllNotes()).thenReturn(List.of(note));
@@ -54,6 +61,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void getNoteByPatIdReturnsOkAndBody() throws Exception {
         Note note = buildNote("n2", 22L, "Jane Doe", "blood pressure elevated");
         when(noteService.getNoteByPatId(22L)).thenReturn(List.of(note));
@@ -65,6 +73,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void createNoteWithValidPayloadReturnsOk() throws Exception {
         Note newNote = buildNote(null, 6L, "Mary Sue", "patient recovering");
 
@@ -77,6 +86,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void createNoteWithInvalidPayloadReturnsValidationError() throws Exception {
         String invalidJson = "{\"patId\":null,\"patient\":\"\",\"note\":\"\"}";
 
@@ -91,6 +101,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void updateNoteReturnsOk() throws Exception {
         Note updated = buildNote(null, 18L, "John Doe", "updated treatment plan");
 
@@ -103,6 +114,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void updateNoteReturnsNotFoundWhenMissing() throws Exception {
         Note updated = buildNote(null, 18L, "John Doe", "updated treatment plan");
         doThrow(new NoteNotFoundException("Note not found for noteId: n404"))
@@ -117,6 +129,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void deleteNoteReturnsOk() throws Exception {
         mockMvc.perform(delete("/api/notes/n3"))
                 .andExpect(status().isOk());
@@ -125,6 +138,7 @@ class NoteControllerTests {
     }
 
     @Test
+    @WithMockUser
     void deleteNoteReturnsNotFoundWhenMissing() throws Exception {
         doThrow(new NoteNotFoundException("Note not found for noteId: missing"))
                 .when(noteService)

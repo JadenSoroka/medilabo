@@ -25,6 +25,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/medilabo
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      JWT_SECRET: MediLaboSuperSecretKeyForJwtTokenSigning2026!MustBeAtLeast256Bits
     ports:
       - "9090:9090"
     depends_on:
@@ -53,6 +54,7 @@ services:
     container_name: medilabo-physician-notes
     environment:
       SPRING_MONGODB_URI: mongodb://mongodb:27017/medilabo
+      JWT_SECRET: MediLaboSuperSecretKeyForJwtTokenSigning2026!MustBeAtLeast256Bits
     ports:
       - "9091:9091"
     depends_on:
@@ -70,6 +72,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_MONGODB_URI: mongodb://mongodb:27017/medilabo
+      JWT_SECRET: MediLaboSuperSecretKeyForJwtTokenSigning2026!MustBeAtLeast256Bits
     ports:
       - "9092:9092"
     depends_on:
@@ -88,6 +91,7 @@ services:
       URI_FRONTEND: http://frontend:3000
       URI_PHYSICIAN_NOTES: http://physiciannotes:9091
       URI_DIABETES_ASSESSMENT: http://diabetesassessment:9092
+      JWT_SECRET: MediLaboSuperSecretKeyForJwtTokenSigning2026!MustBeAtLeast256Bits
     ports:
       - "8080:8080"
     depends_on:
